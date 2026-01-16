@@ -88,13 +88,6 @@ const isValidEmail = (email) => {
 const [copyType, setCopyType] = useState(""); // soft | hard
 const [deliveryType, setDeliveryType] = useState(""); // pickup | shipping
 const [shippingAddress, setShippingAddress] = useState("");
-const SHIPPING_FEE = 2000;
-const amount =
-  copyType === "soft"
-    ? 5000
-    : copyType === "hard"
-    ? 7000 + (deliveryType === "shipping" ? SHIPPING_FEE : 0)
-    : 0;
 
 
 
