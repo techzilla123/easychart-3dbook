@@ -85,11 +85,6 @@ const isValidEmail = (email) => {
 };
 
 
-const [copyType, setCopyType] = useState(""); // soft | hard
-const [deliveryType, setDeliveryType] = useState(""); // pickup | shipping
-const [shippingAddress, setShippingAddress] = useState("");
-
-
 
   useEffect(() => {
     const audio = new Audio("/audios/page-flip-01a.mp3");
