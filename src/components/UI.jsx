@@ -98,7 +98,7 @@ const isValidEmail = (email) => {
        <div className="pointer-events-auto mt-10 mr-10 absolute right-0 top-0 flex items-center gap-6">
 
   <a
-    href="https://mr-raji.vercel.app/"
+    href="http://author.easycharts.com.ng/"
     className="
       text-white text-xl font-light hover:underline tracking-wide
       max-sm:text-base   /* smaller on mobile */
