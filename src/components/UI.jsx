@@ -1,18 +1,19 @@
 import { atom, useAtom } from "jotai";
 import { useEffect } from "react";
 import { useState } from "react";
-const payWithPaystack = (email) => {
+const payWithPaystack = ({ email, amount, onSuccess }) => {
   if (!email) return;
 
   const handler = window.PaystackPop.setup({
     key: "pk_test_a79b03c08389a284eb1c5cb1add352d033c9e5f2",
     email: email,
-    amount: 7000 * 100,
+    amount: amount * 100,
     currency: "NGN",
     ref: "REF-" + Date.now(),
 
     callback: function (response) {
       console.log("Payment Successful! Reference:", response.reference);
+      onSuccess?.();
     },
 
     onClose: function () {
@@ -22,6 +23,7 @@ const payWithPaystack = (email) => {
 
   handler.openIframe();
 };
+
 
 
 const pictures = [
@@ -63,6 +65,18 @@ pages.push({
 });
 
 export const UI = () => {
+  const [copyType, setCopyType] = useState(""); // soft | hard
+const [deliveryType, setDeliveryType] = useState(""); // pickup | shipping
+const [shippingAddress, setShippingAddress] = useState("");
+const SHIPPING_FEE = 2000;
+const amount =
+  copyType === "soft"
+    ? 5000
+    : copyType === "hard"
+    ? 7000 + (deliveryType === "shipping" ? SHIPPING_FEE : 0)
+    : 0;
+
+
   const [page, setPage] = useAtom(pageAtom);
   const [showEmailModal, setShowEmailModal] = useState(false);
 const [customerEmail, setCustomerEmail] = useState("");
@@ -70,6 +84,17 @@ const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/.test(email);
 };
 
+
+const [copyType, setCopyType] = useState(""); // soft | hard
+const [deliveryType, setDeliveryType] = useState(""); // pickup | shipping
+const [shippingAddress, setShippingAddress] = useState("");
+const SHIPPING_FEE = 2000;
+const amount =
+  copyType === "soft"
+    ? 5000
+    : copyType === "hard"
+    ? 7000 + (deliveryType === "shipping" ? SHIPPING_FEE : 0)
+    : 0;
 
 
 
@@ -232,24 +257,112 @@ const isValidEmail = (email) => {
   </div>
 </div>
 {showEmailModal && (
-  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[999]">
-    <div className="bg-white text-black rounded-2xl p-8 w-[90%] max-w-md shadow-xl">
+  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[999] px-4">
+    <div className="bg-white text-black rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl p-6">
 
-      <h2 className="text-2xl font-semibold mb-4 text-center">
-        Enter Your Email
+      {/* HEADER */}
+      <h2 className="text-xl font-semibold text-center mb-4">
+        Complete Your Order
       </h2>
 
-      <input
-        type="email"
-        placeholder="you@example.com"
-        value={customerEmail}
-        onChange={(e) => setCustomerEmail(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-6"
-      />
+      {/* EMAIL */}
+      <div className="mb-4">
+        <label className="text-sm font-medium">Email</label>
+        <input
+          type="email"
+          placeholder="you@example.com"
+          value={customerEmail}
+          onChange={(e) => setCustomerEmail(e.target.value)}
+          className="w-full border rounded-lg px-4 py-2 mt-1 focus:ring-2 focus:ring-indigo-500 outline-none"
+        />
+      </div>
 
-      <div className="flex justify-between gap-4">
+      {/* COPY TYPE */}
+      <div className="mb-4">
+        <label className="text-sm font-medium">Book format</label>
+        <div className="grid grid-cols-2 gap-3 mt-2">
+          <button
+            onClick={() => setCopyType("soft")}
+            className={`py-2 rounded-lg border text-sm ${
+              copyType === "soft"
+                ? "border-indigo-600 bg-indigo-50"
+                : "bg-gray-100"
+            }`}
+          >
+            Soft Copy<br />
+            <span className="font-semibold">₦5,000</span>
+          </button>
+
+          <button
+            onClick={() => setCopyType("hard")}
+            className={`py-2 rounded-lg border text-sm ${
+              copyType === "hard"
+                ? "border-indigo-600 bg-indigo-50"
+                : "bg-gray-100"
+            }`}
+          >
+            Hard Copy<br />
+            <span className="font-semibold">₦7,000</span>
+          </button>
+        </div>
+      </div>
+
+      {/* DELIVERY */}
+      {copyType === "hard" && (
+        <div className="mb-4">
+          <label className="text-sm font-medium">Delivery</label>
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            <button
+              onClick={() => setDeliveryType("pickup")}
+              className={`py-2 rounded-lg border text-sm ${
+                deliveryType === "pickup"
+                  ? "border-indigo-600 bg-indigo-50"
+                  : "bg-gray-100"
+              }`}
+            >
+              Pickup
+            </button>
+
+            <button
+              onClick={() => setDeliveryType("shipping")}
+              className={`py-2 rounded-lg border text-sm ${
+                deliveryType === "shipping"
+                  ? "border-indigo-600 bg-indigo-50"
+                  : "bg-gray-100"
+              }`}
+            >
+              Ship
+            </button>
+          </div>
+
+          {deliveryType === "shipping" && (
+            <>
+              <textarea
+                placeholder="Shipping address"
+                value={shippingAddress}
+                onChange={(e) => setShippingAddress(e.target.value)}
+                className="w-full border rounded-lg p-2 mt-3"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Shipping fee: ₦{SHIPPING_FEE.toLocaleString()}
+              </p>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* TOTAL */}
+      {amount > 0 && (
+        <div className="flex justify-between text-sm font-medium border-t pt-3 mb-4">
+          <span>Total</span>
+          <span>₦{amount.toLocaleString()}</span>
+        </div>
+      )}
+
+      {/* ACTIONS */}
+      <div className="flex gap-3">
         <button
-          className="flex-1 bg-gray-300 text-black py-3 rounded-lg"
+          className="flex-1 bg-gray-200 py-2 rounded-lg"
           onClick={() => {
             setCustomerEmail("");
             setShowEmailModal(false);
@@ -258,24 +371,37 @@ const isValidEmail = (email) => {
           Cancel
         </button>
 
-    <button
-  className={`flex-1 py-3 rounded-lg text-white
-    ${isValidEmail(customerEmail) 
-      ? "bg-[radial-gradient(circle,#5a47ce,#7b5df7)]" 
-      : "bg-gray-400 cursor-not-allowed"}`}
-  disabled={!isValidEmail(customerEmail)}
-  onClick={() => {
-    if (!isValidEmail(customerEmail)) return;
-    setShowEmailModal(false);
-    payWithPaystack(customerEmail);
-  }}
->
-  Continue
-</button>
-
-
-
-
+        <button
+          className={`flex-1 py-2 rounded-lg text-white ${
+            isValidEmail(customerEmail) &&
+            copyType &&
+            (copyType === "soft" ||
+              (copyType === "hard" &&
+                deliveryType &&
+                (deliveryType === "pickup" || shippingAddress)))
+              ? "bg-indigo-600"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
+          disabled={
+            !isValidEmail(customerEmail) ||
+            !copyType ||
+            (copyType === "hard" &&
+              (!deliveryType ||
+                (deliveryType === "shipping" && !shippingAddress)))
+          }
+          onClick={() => {
+            setShowEmailModal(false);
+            payWithPaystack({
+              email: customerEmail,
+              amount,
+              onSuccess: () => {
+                if (copyType === "soft") downloadBook();
+              },
+            });
+          }}
+        >
+          Pay ₦{amount.toLocaleString()}
+        </button>
       </div>
 
     </div>
