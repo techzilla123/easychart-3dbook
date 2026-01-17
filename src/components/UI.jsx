@@ -5,23 +5,49 @@ const payWithPaystack = ({ email, amount, onSuccess }) => {
   if (!email) return;
 
   const handler = window.PaystackPop.setup({
-    key: "pk_test_a79b03c08389a284eb1c5cb1add352d033c9e5f2",
-    email: email,
-    amount: amount * 100,
-    currency: "NGN",
-    ref: "REF-" + Date.now(),
+  key: "pk_test_a79b03c08389a284eb1c5cb1add352d033c9e5f2",
+  email: email,
+  amount: amount * 100,
+  currency: "NGN",
+  ref: "REF-" + Date.now(),
 
-    callback: function (response) {
-      console.log("Payment Successful! Reference:", response.reference);
-      onSuccess?.();
-    },
+  metadata: {
+    custom_fields: [
+      {
+        display_name: "Book",
+        variable_name: "book_title",
+        value: "Cooing Of A Homing Pigeon"
+      },
+      {
+        display_name: "Format",
+        variable_name: "format",
+        value: copyType === "soft" ? "Soft Copy" : "Hard Copy"
+      },
+      {
+        display_name: "Delivery",
+        variable_name: "delivery",
+        value: deliveryType || "N/A"
+      }
+    ]
+  },
 
-    onClose: function () {
-      console.log("Payment window closed.");
-    },
-  });
+  callback: function (response) {
+    console.log("Payment Successful! Reference:", response.reference);
+    onSuccess?.();
 
-  handler.openIframe();
+    // optional: auto-download soft copy
+    if (copyType === "soft") {
+      downloadBook();
+    }
+  },
+
+  onClose: function () {
+    console.log("Payment window closed.");
+  }
+});
+
+handler.openIframe();
+
 };
 
 
