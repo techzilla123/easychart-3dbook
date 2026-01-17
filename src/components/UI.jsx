@@ -1,7 +1,7 @@
 import { atom, useAtom } from "jotai";
 import { useEffect } from "react";
 import { useState } from "react";
-const payWithPaystack = ({ email, amount, copyType, deliveryType, onSuccess }) => {
+const payWithPaystack = ({ email, amount, copyType, deliveryType, shippingAddress, onSuccess }) => {
   if (!email) return;
 
   const handler = window.PaystackPop.setup({
@@ -16,19 +16,29 @@ const payWithPaystack = ({ email, amount, copyType, deliveryType, onSuccess }) =
         {
           display_name: "Book",
           variable_name: "book_title",
-          value: "Cooing Of A Homing Pigeon"
+          value: "The Colour Of Silence",
         },
         {
           display_name: "Format",
           variable_name: "format",
-          value: copyType === "soft" ? "Soft Copy" : "Hard Copy"
+          value: copyType === "soft" ? "Soft Copy" : "Hard Copy",
         },
         {
           display_name: "Delivery",
           variable_name: "delivery",
-          value: deliveryType || "N/A"
-        }
-      ]
+          value: deliveryType || "N/A",
+        },
+        // ✅ Add shipping address only if shipping
+        ...(deliveryType === "shipping"
+          ? [
+              {
+                display_name: "Shipping Address",
+                variable_name: "shipping_address",
+                value: shippingAddress || "N/A",
+              },
+            ]
+          : []),
+      ],
     },
 
     callback: function (response) {
@@ -37,8 +47,8 @@ const payWithPaystack = ({ email, amount, copyType, deliveryType, onSuccess }) =
 
       if (copyType === "soft") {
         const link = document.createElement("a");
-        link.href = "/books/cooing-of-a-homing-pigeon.pdf";
-        link.download = "Cooing-Of-A-Homing-Pigeon.pdf";
+        link.href = "/books/colour-of-silence.pdf";
+        link.download = "Colour-of-silence.pdf";
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -47,11 +57,12 @@ const payWithPaystack = ({ email, amount, copyType, deliveryType, onSuccess }) =
 
     onClose: function () {
       console.log("Payment window closed.");
-    }
+    },
   });
 
   handler.openIframe();
 };
+
 
 
 
@@ -388,37 +399,40 @@ const isValidEmail = (email) => {
           Cancel
         </button>
 
-        <button
-          className={`flex-1 py-2 rounded-lg text-white ${
-            isValidEmail(customerEmail) &&
-            copyType &&
-            (copyType === "soft" ||
-              (copyType === "hard" &&
-                deliveryType &&
-                (deliveryType === "pickup" || shippingAddress)))
-              ? "bg-indigo-600"
-              : "bg-gray-400 cursor-not-allowed"
-          }`}
-          disabled={
-            !isValidEmail(customerEmail) ||
-            !copyType ||
-            (copyType === "hard" &&
-              (!deliveryType ||
-                (deliveryType === "shipping" && !shippingAddress)))
-          }
-          onClick={() => {
-            setShowEmailModal(false);
-            payWithPaystack({
-              email: customerEmail,
-              amount,
-              onSuccess: () => {
-                if (copyType === "soft") downloadBook();
-              },
-            });
-          }}
-        >
-          Pay ₦{amount.toLocaleString()}
-        </button>
+      <button
+  className={`flex-1 py-2 rounded-lg text-white ${
+    isValidEmail(customerEmail) &&
+    copyType &&
+    (copyType === "soft" ||
+      (copyType === "hard" &&
+        deliveryType &&
+        (deliveryType === "pickup" || shippingAddress)))
+      ? "bg-indigo-600"
+      : "bg-gray-400 cursor-not-allowed"
+  }`}
+  disabled={
+    !isValidEmail(customerEmail) ||
+    !copyType ||
+    (copyType === "hard" &&
+      (!deliveryType || (deliveryType === "shipping" && !shippingAddress)))
+  }
+  onClick={() => {
+    setShowEmailModal(false);
+    payWithPaystack({
+      email: customerEmail,
+      amount,
+      copyType,         // ✅ pass copy type
+      deliveryType,     // ✅ pass delivery type
+      shippingAddress,  // ✅ pass shipping address
+      onSuccess: () => {
+        if (copyType === "soft") downloadBook();
+      },
+    });
+  }}
+>
+  Pay ₦{amount.toLocaleString()}
+</button>
+
       </div>
 
     </div>
