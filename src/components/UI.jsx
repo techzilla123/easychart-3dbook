@@ -1,53 +1,56 @@
 import { atom, useAtom } from "jotai";
 import { useEffect } from "react";
 import { useState } from "react";
-const payWithPaystack = ({ email, amount, onSuccess }) => {
+const payWithPaystack = ({ email, amount, copyType, deliveryType, onSuccess }) => {
   if (!email) return;
 
   const handler = window.PaystackPop.setup({
-  key: "pk_test_a79b03c08389a284eb1c5cb1add352d033c9e5f2",
-  email: email,
-  amount: amount * 100,
-  currency: "NGN",
-  ref: "REF-" + Date.now(),
+    key: "pk_test_a79b03c08389a284eb1c5cb1add352d033c9e5f2",
+    email: email,
+    amount: amount * 100,
+    currency: "NGN",
+    ref: "REF-" + Date.now(),
 
-  metadata: {
-    custom_fields: [
-      {
-        display_name: "Book",
-        variable_name: "book_title",
-        value: "Cooing Of A Homing Pigeon"
-      },
-      {
-        display_name: "Format",
-        variable_name: "format",
-        value: copyType === "soft" ? "Soft Copy" : "Hard Copy"
-      },
-      {
-        display_name: "Delivery",
-        variable_name: "delivery",
-        value: deliveryType || "N/A"
+    metadata: {
+      custom_fields: [
+        {
+          display_name: "Book",
+          variable_name: "book_title",
+          value: "Cooing Of A Homing Pigeon"
+        },
+        {
+          display_name: "Format",
+          variable_name: "format",
+          value: copyType === "soft" ? "Soft Copy" : "Hard Copy"
+        },
+        {
+          display_name: "Delivery",
+          variable_name: "delivery",
+          value: deliveryType || "N/A"
+        }
+      ]
+    },
+
+    callback: function (response) {
+      console.log("Payment Successful! Reference:", response.reference);
+      onSuccess?.();
+
+      if (copyType === "soft") {
+        const link = document.createElement("a");
+        link.href = "/books/cooing-of-a-homing-pigeon.pdf";
+        link.download = "Cooing-Of-A-Homing-Pigeon.pdf";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
-    ]
-  },
+    },
 
-  callback: function (response) {
-    console.log("Payment Successful! Reference:", response.reference);
-    onSuccess?.();
-
-    // optional: auto-download soft copy
-    if (copyType === "soft") {
-      downloadBook();
+    onClose: function () {
+      console.log("Payment window closed.");
     }
-  },
+  });
 
-  onClose: function () {
-    console.log("Payment window closed.");
-  }
-});
-
-handler.openIframe();
-
+  handler.openIframe();
 };
 
 
