@@ -152,13 +152,22 @@ const isValidEmail = (email) => {
         >
           <img className="w-20" src="/images/easy.png" />
         </a>
-       <div className="pointer-events-auto mt-10 mr-10 absolute right-0 top-0 flex items-center gap-6">
-
+      <div
+  className="
+    pointer-events-auto
+    absolute
+    right-4 top-6
+    md:right-10 md:top-10
+    flex flex-col md:flex-row
+    items-end md:items-center
+    gap-3 md:gap-6
+  "
+>
   <a
     href="http://author.easycharts.com.ng/"
     className="
-      text-white text-xl font-light hover:underline tracking-wide
-      max-sm:text-base   /* smaller on mobile */
+      text-white font-light hover:underline tracking-wide
+      text-sm md:text-xl
     "
   >
     About Author
