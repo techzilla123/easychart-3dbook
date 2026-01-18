@@ -5,7 +5,7 @@ const payWithPaystack = ({ email, amount, copyType, deliveryType, shippingAddres
   if (!email) return;
 
   const handler = window.PaystackPop.setup({
-    key: "pk_test_a79b03c08389a284eb1c5cb1add352d033c9e5f2",
+    key: "pk_live_f209e12789ffa60ebec8c96f5953e859bc70fb75",
     email: email,
     amount: amount * 100,
     currency: "NGN",
